@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/api/api.ts","./src/components/colorpicker.tsx","./src/components/toolbar.tsx","./src/components/ui/button.tsx","./src/hooks/usesocket.ts","./src/lib/utils.ts","./src/pages/whiteboard.tsx"],"version":"5.8.3"}
