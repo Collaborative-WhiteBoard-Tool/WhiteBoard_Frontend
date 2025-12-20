@@ -1,11 +1,6 @@
 import { Link } from "react-router-dom"
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 
-const Sidebar = () => {
+const SidebarDashboard = () => {
     return (
         <aside style={{ width: 200, background: '#f4f4f4', padding: 16 }}>
             <ul>
@@ -24,4 +19,4 @@ const Sidebar = () => {
 
 }
 
-export default Sidebar
+export default SidebarDashboard

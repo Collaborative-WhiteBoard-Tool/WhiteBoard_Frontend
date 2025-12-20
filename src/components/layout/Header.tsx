@@ -1,9 +1,12 @@
-const Header = () => {
+import { Link } from "react-router-dom"
+
+const SidebarDashboard = () => {
     return (
-        <header style={{ padding: 16, background: '#333', color: '#fff' }}>
-            <p>Header</p>
+        <header className="bg-amber-100 py-6">
+
         </header>
     )
+
 }
 
-export default Header
+export default SidebarDashboard
