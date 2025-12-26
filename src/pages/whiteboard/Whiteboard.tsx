@@ -3,9 +3,9 @@ import { useSocket } from "../../hooks/useSocket";
 import { Socket } from "socket.io-client";
 
 type DrawSegment = {
-  x0: number; 
+  x0: number;
   y0: number;
-  x1: number; 
+  x1: number;
   y1: number;
   color: string;
   width: number;
@@ -19,7 +19,7 @@ interface WhiteboardProps {
   userId: string;
 }
 
-export default function Whiteboard({socket, boardId, userId} : WhiteboardProps) {  
+export default function Whiteboard({ socket, boardId, userId }: WhiteboardProps) {
   // const socket = useSocket();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
