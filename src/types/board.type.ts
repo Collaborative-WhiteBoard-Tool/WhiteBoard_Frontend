@@ -6,23 +6,69 @@ import { ApiResponse } from "./auth.type";
 
 export type CreateWhiteboardDTO = z.infer<typeof createNewBoardSchema>
 
-export interface BoardListItem {
+
+
+export interface WhiteboardResponse {
     id: string
     title: string
     description: string | null
     isPublic: boolean
-    ownerId: string
     type: string | null
+    createdAt: Date
+    updatedAt: Date
+    owner: {
+        username: string;
+        displayName: string | null
+    };
+    collaborators: {
+        id: string;
+        role: 'OWNER' | 'EDITOR' | 'VIEWER';
+        invitedAt: Date
+        acceptedAt: Date | null
+        user: {
+            username: string;
+            displayName: string | null
+        };
+    }[]
+}
+////////////
+
+
+
+export interface ListBoardsResponseData {
+    whiteboards: WhiteBoardItem[]
+    collaborators?: CollaboratorResponse[]
+    total: number
+    page: number
+    limit: number
+}
+
+export interface WhiteBoardItem {
+    id: string
+    title: string
+    description: string | null
+    isPublic: boolean
+    type: string | null
+    owner: {
+        id: string;
+        username: string;
+        displayName: string | null
+    };
     createdAt: Date
     updatedAt: Date
 }
 
-export interface ListBoardsResponse {
-    boards: BoardListItem[]
-    total: number
-    page: number
-    limit: number
-    totalPages: number
+
+export interface CollaboratorResponse {
+    id: string;
+    role: 'OWNER' | 'EDITOR' | 'VIEWER';
+    invitedAt: Date
+    acceptedAt: Date | null
+    user: {
+        username: string;
+        displayName: string | null
+    };
 }
 
-export type BoardResponse = ApiResponse<BoardListItem>
+export type ListBoardsResponse = ApiResponse<ListBoardsResponseData>
+export type BoardResponse = ApiResponse<WhiteboardResponse>

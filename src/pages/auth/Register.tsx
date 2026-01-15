@@ -62,7 +62,7 @@ const RegisterPage = () => {
             } else {
                 // ✅ Error toast with Sonner
                 toast.error('Registration failed', {
-                    description: error?.response?.data?.message ?? "Hello",
+                    description: error?.response?.data?.message,
                     duration: 4000,
                 })
             }

@@ -7,18 +7,13 @@ export const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    // withCredentials: true,
+    withCredentials: true,
 });
 
 
 // Request interceptor
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            config.headers = config.headers ?? {}
-            config.headers.Authorization = `Bearer ${token}`;
-        }
         return config;
     },
     (error) => {
@@ -31,6 +26,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
+
         const originalRequest = error.config;
 
         // If error is 401 and we haven't retried yet
@@ -38,26 +34,11 @@ apiClient.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (!refreshToken) {
-                    throw new Error('No refresh token');
-                }
-
-                // Try to refresh token
-                const { data } = await axios.post<RefreshTokenResponse>(
-                    `${import.meta.env.VITE_API_URL}/auth/refresh`,
-                    { refreshToken }
-                );
-
-                localStorage.setItem('accessToken', data.data.accessToken);
-                apiClient.defaults.headers.common['Authorization'] =
-                    `Bearer ${data.data.accessToken}`;
-
+                await apiClient.post('/auth/refresh-token');
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 // Refresh failed, logout user
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
+                await apiClient.post('/auth/logout');
                 window.location.href = '/login';
                 return Promise.reject(refreshError);
             }

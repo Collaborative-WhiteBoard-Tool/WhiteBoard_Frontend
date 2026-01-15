@@ -9,33 +9,24 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardFooter } from "../../../components/ui/card"
-import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { useEffect } from 'react';
+import { useWhiteboard } from '@/hooks/use-whiteboard';
+import { useNavigate } from 'react-router-dom';
 
 const ListBoard = () => {
-    // const fetchWhiteboards = useCallback(
-    //     async (page: number = 1, limit: number = 10) => {
-    //         try {
-    //             const response = await whiteboardApi.getAll(page, limit);
-    //             setWhiteboards(response.data.whiteboards);
-    //             setTotal(response.data.total);
-    //         } catch (error: any) {
+    const navigate = useNavigate()
 
-    //             toast.error('Error!', {
-    //                 description: error.response?.data?.message || 'Failed to fetch whiteboards',
-    //                 duration: 3000,
-    //             });
-    //         }
-    //         // finally {
-    //         //     setIsLoading(false);
-    //         // }
-    //     },
-    //     [toast]
-    // );
+    const { whiteboards, fetchWhiteboards } = useWhiteboard()
+    // const [selectedWhiteboard, setSelectedWhiteboard] = useState<WhiteboardResponse | null>(null);
+
+    useEffect(() => { fetchWhiteboards() }, [fetchWhiteboards]);
+
+
 
 
     return (
-        < div className="bg-gray-100 p-5 h-screen">
+        < div className="bg-gray-600 p-5 h-screen">
+
             <header className="border border-t-0 border-x-0 border-b-gray-300">
                 <h1 className="text-3xl font-bold mb-2 mx-3">List All Boards</h1>
                 <div className="filter flex gap-3 mx-3 my-4">
@@ -95,21 +86,19 @@ const ListBoard = () => {
 
             {/* List board */}
             <section className="mx-3 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
-                <Card className="w-[90%] max-w-sm overflow-hidden shadow-none border-none hover:scale-98 transition">
-                    <CardContent className="p-3">
-                        <img src={boardImg}
-                            className="h-40 w-full object-cover rounded-2xl" alt="" />
-                    </CardContent>
-                    <CardFooter className="block  text-sm">
-                        <b>Title</b>
-                        <p className="text-muted-foreground">Last modified: Today</p>
-                        <p className="text-muted-foreground">Owner: You</p>
-                    </CardFooter>
-                </Card>
-
-
-
-
+                {whiteboards.map((board) => (
+                    <Card key={board.id} onClick={() => navigate(`/whiteboard/${board.id}`)} className="w-[90%] max-w-sm overflow-hidden shadow-none border-none hover:scale-98 transition">
+                        <CardContent className="p-3">
+                            <img src={boardImg}
+                                className="h-40 w-full object-cover rounded-2xl" alt="" />
+                        </CardContent>
+                        <CardFooter className="block  text-[12px]">
+                            <b>{board.title}</b>
+                            <p className="text-muted-foreground">Last modified: {new Date(board.updatedAt).toLocaleString()}</p>
+                            <p className="text-muted-foreground">Owner: {board.owner.username}</p>
+                        </CardFooter>
+                    </Card>
+                ))}
             </section>
         </div>
     )

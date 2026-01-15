@@ -5,7 +5,7 @@ import { SidebarProvider } from "../../../components/ui/sidebar"
 
 const DashboardLayout = () => {
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-gray-700">
             <HeaderDashboard />
             <SidebarProvider>
                 <div className="flex flex-1 ">

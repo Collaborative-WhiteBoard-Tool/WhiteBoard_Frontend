@@ -43,9 +43,7 @@ const LoginPage = () => {
 
         setIsLoading(true)
         try {
-            const response = await authApi.login(values)
-            localStorage.setItem("accessToken", response.result.accessToken)
-            localStorage.setItem("refreshToken", response.result.refreshToken)
+            await authApi.login(values)
 
             toast.success('Account created successfully!', {
                 description: 'Welcome to Mozin. Redirecting to dashboard...',
@@ -65,8 +63,8 @@ const LoginPage = () => {
                 )
             } else {
                 // ✅ Error toast with Sonner
-                toast.error('Registration failed', {
-                    description: error?.response?.data?.message ?? "Hello",
+                toast.error('Login failed', {
+                    description: error?.response?.data?.message,
                     duration: 4000,
                 })
             }

@@ -8,7 +8,7 @@ import NotFound from "@/pages/NotFound";
 import ProductPage from "@/pages/dashboard/layout/ProductPage";
 import UserPage from "@/pages/dashboard/layout/UserPage";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Whiteboard1 } from "@/pages/whiteboard/whiteboard1";
+import { WhiteboardPage } from "@/pages/whiteboard/whiteboardPage";
 
 const AppRouter = () => {
     return (
@@ -18,7 +18,7 @@ const AppRouter = () => {
                 <Route path="/dashboard/products" element={<ProductPage />} />
                 <Route path="/dashboard/listboard" element={<ListBoard />} />
             </Route>
-            <Route path="/whiteboard/:id" element={<Whiteboard1 />} />
+            <Route path="/whiteboard/:id" element={<WhiteboardPage />} />
             <Route path="/homepage" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
