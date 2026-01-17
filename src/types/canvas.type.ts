@@ -21,7 +21,7 @@ export interface Stroke {
     username?: string;
 
     /** Tool dùng để render */
-    type: 'pen' | 'eraser';
+    type: 'pen' | 'eraser' | 'line' | 'circle' | 'rectangle'
 
     /** Tool người dùng chọn */
     tool: DrawTool;

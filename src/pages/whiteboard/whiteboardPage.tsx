@@ -5,10 +5,11 @@ import { useCanvasStore } from "@/store/CanvasStore"
 import { ArrowLeft, Maximize2, Minimize2, UsersIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { Toolbar } from '@/components/whiteboard/Toolbar';
+
 import Canvas from "@/components/whiteboard/Canvas"
 import { UserList } from "./UserList"
 import { ConnectionStatus } from "./ConnectionStatus"
+import Toolbar from "@/components/whiteboard/Toolbar"
 
 export const WhiteboardPage = () => {
 
@@ -129,6 +130,7 @@ export const WhiteboardPage = () => {
                     <Toolbar />
                 </header>
             )}
+
 
             {/* Main Area: Nơi chứa Canvas */}
             <main ref={containerRef} className="flex-1 relative bg-[#f8f9fa] overflow-hidden">

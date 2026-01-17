@@ -28,6 +28,14 @@ interface CanvasStore {
     fps: number;
     lastFrameTime: number;
 
+    // ... existing state
+    showGrid: boolean;
+    gridSize: number;
+
+    // ... existing actions
+    setShowGrid: (show: boolean) => void;
+    setGridSize: (size: number) => void;
+
 
     // Actions - State Management
     setStrokes: (strokes: Stroke[]) => void;
@@ -89,6 +97,15 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
     fps: 60,
     lastFrameTime: Date.now(),
+
+
+    // ... existing state
+    showGrid: true,
+    gridSize: 20,
+
+    // ... existing actions
+    setShowGrid: (showGrid) => set({ showGrid }),
+    setGridSize: (gridSize) => set({ gridSize }),
 
 
     // State management

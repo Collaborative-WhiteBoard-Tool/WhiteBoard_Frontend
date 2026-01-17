@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-    Pen, Eraser, Minus, Square, Circle, MousePointer, ZoomIn, ZoomOut, RotateCcw
+    Pen, Eraser, Minus, Square, Circle, MousePointer, ZoomIn, ZoomOut, RotateCcw,
+    Grid3x3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -15,6 +16,7 @@ import { DrawTool } from '@/types/canvas.type';
 
 
 export const Toolbar: React.FC = () => {
+    const { showGrid, setShowGrid } = useCanvasStore();
     const { tool, color, width, setTool, setColor, setWidth } = useCanvasStore();
 
     const tools: { icon: React.ReactNode; value: DrawTool; label: string; shortcut: string }[] = [
@@ -84,7 +86,9 @@ export const Toolbar: React.FC = () => {
                                 <Button
                                     variant={tool === t.value ? 'default' : 'outline'}
                                     size="icon"
-                                    onClick={() => setTool(t.value)}
+                                    onClick={() => {
+                                        setTool(t.value)
+                                    }}
                                     className="relative"
                                 >
                                     {t.icon}
@@ -179,6 +183,15 @@ export const Toolbar: React.FC = () => {
                             <p>Zoom Out</p>
                         </TooltipContent>
                     </Tooltip>
+
+                    <Button
+                        variant={showGrid ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setShowGrid(!showGrid)}
+                    >
+                        <Grid3x3 className="h-4 w-4 mr-2" />
+                        Grid
+                    </Button>
                 </div>
             </TooltipProvider>
         </div>

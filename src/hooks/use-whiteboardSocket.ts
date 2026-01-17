@@ -1,22 +1,26 @@
-import { initializeSocket } from "@/lib/socket/socket";
-import { useCanvasStore } from "@/store/CanvasStore";
-import { BatchStrokes, Cursor, Stroke, UserPresence } from "@/types/canvas.type";
-import { useCallback, useEffect, useRef } from "react";
-import { Socket } from "socket.io-client";
-import { toast } from "sonner";
+// src/hooks/use-whiteboardSocket.ts
+import { useEffect, useRef, useCallback } from 'react';
+import { Socket } from 'socket.io-client';
+import { toast } from 'sonner';
+import { useCanvasStore } from '@/store/CanvasStore';
+import { initializeSocket } from '@/lib/socket/socket';
+import { Stroke, Cursor, UserPresence, BatchStrokes } from '@/types/canvas.type';
+import { CursorEngine } from '@/lib/engine/CursorEngine';
 
-export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
+export const useWhiteboardSocket = (
+    whiteboardId: string | undefined,
+    cursorEngineRef: React.RefObject<CursorEngine> | null
+) => {
     const socketRef = useRef<Socket | null>(null);
     const lastCursorSendTime = useRef<number>(0);
     const cursorThrottle = 50; // ms
     const hasJoinedRef = useRef(false);
 
+    // Store actions
     const setStrokes = useCanvasStore(state => state.setStrokes);
     const addStroke = useCanvasStore(state => state.addStroke);
     const strokeBatch = useCanvasStore(state => state.strokeBatch);
     const clearBatch = useCanvasStore(state => state.clearBatch);
-    const updateCursor = useCanvasStore(state => state.updateCursor);
-    const removeCursor = useCanvasStore(state => state.removeCursor);
     const setUsers = useCanvasStore(state => state.setUsers);
     const addUser = useCanvasStore(state => state.addUser);
     const removeUser = useCanvasStore(state => state.removeUser);
@@ -24,67 +28,14 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
     const setIsLoading = useCanvasStore(state => state.setIsLoading);
     const reset = useCanvasStore(state => state.reset);
 
-
-    useEffect(() => {
-        if (!whiteboardId) return;
-
-        console.log('🔌 Step 1: whiteboardId =', whiteboardId);
-        let socket = socketRef.current;
-        if (!socket) {
-            socket = initializeSocket()
-            console.log('🔌 Step 2: socket created =', socket?.id);
-            socketRef.current = socket;
-
-            console.log('🔌 Step 3: listeners setup');
-        }
-        setupSocketListeners(socket);
-
-
-        //Nếu đã tạo socket, giữ trạng thái socket : connected 
-        if (socket.connected) {
-            setIsConnected(true);
-        } else {
-            setIsConnected(false);
-        }
-
-        // ✅ SETUP LISTENERS TRƯỚC KHI JOIN
-        // ✅ Chỉ join nếu chưa join
-        if (socket && !hasJoinedRef.current) {
-            socket.emit('join_whiteboard', { whiteboardId })
-            hasJoinedRef.current = true;
-            console.log('🔌 Step 5: emitted join_whiteboard');
-        }
-        // Cleanup
-        return () => {
-            console.log('🔌 Cleaning up socket for whiteboard:', whiteboardId);
-            // ✅ KHÔNG disconnect socket, chỉ leave room
-            if (socket && hasJoinedRef.current) {
-                socket.emit('leave_whiteboard');
-                hasJoinedRef.current = false;
-            }
-
-            // Remove all listeners
-            socket.off('whiteboard_state');
-            socket.off('stroke_drawn');
-            socket.off('batch_drawn');
-            socket.off('cursor_moved');
-            socket.off('user_joined');
-            socket.off('user_left');
-            socket.off('snapshot_created');
-            socket.off('error');
-            socket.off('rate_limit_exceeded');
-            reset();
-        };
-    }, [whiteboardId]);
-
-
-    // Setup all socket event listeners
+    // Setup socket listeners
     const setupSocketListeners = useCallback((socket: Socket) => {
         // Connection events
         socket.on('connect', () => {
             console.log('✅ Socket connected');
             setIsConnected(true);
-            // Timeout dự phòng: Nếu sau 3s server không gửi state, vẫn cho người dùng vào bảng trống
+
+            // Timeout fallback: force loading to false after 3s
             setTimeout(() => {
                 const currentState = useCanvasStore.getState();
                 if (currentState.isLoading) {
@@ -94,7 +45,6 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
             }, 3000);
         });
 
-        // listener cho lỗi kết nối để không bị kẹt loading
         socket.on('connect_error', (error) => {
             console.error('❌ Socket connection error:', error.message);
             setIsLoading(false);
@@ -123,22 +73,23 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
             addStroke(stroke);
         });
 
-        // Batch of strokes drawn
+        // Batch of strokes drawn - OPTIMIZED: single state update
         socket.on('batch_drawn', (batch: BatchStrokes) => {
-            console.count(`📥 Received Batch: ${batch.whiteboardId}`);
             console.log('📦 Received batch:', batch.strokes.length, 'strokes');
-            batch.strokes.forEach((stroke) => addStroke(stroke));
+
+            // BEFORE: batch.strokes.forEach(stroke => addStroke(stroke)); // Multiple re-renders
+
+            // AFTER: Single state update
+            const currentStrokes = useCanvasStore.getState().strokes;
+            setStrokes([...currentStrokes, ...batch.strokes]);
         });
 
-        // socket.on('batch_confirmed', () => {
-        //     // Xóa nét vẽ mờ (localStrokes) vì server đã lưu xong nét thật
-        //     clearLocalStrokes();
-        //     console.log("batch_confirm")
-        // });
-
-        // Cursor moved
+        // Cursor moved - OPTIMIZED: forward to engine, no React state
         socket.on('cursor_moved', (cursor: Cursor) => {
-            updateCursor(cursor);
+            if (cursorEngineRef?.current) {
+                // Forward directly to engine (NO state update, NO re-render)
+                cursorEngineRef.current.updateCursor(cursor);
+            }
         });
 
         // User joined
@@ -150,18 +101,17 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
                 description: 'Started collaborating',
                 duration: 3000,
             });
-
         });
 
         // User left
         socket.on('user_left', (data: { userId?: string; userIds?: string[] }) => {
             if (data.userId) {
                 removeUser(data.userId);
-                removeCursor(data.userId);
+                cursorEngineRef?.current?.removeCursor(data.userId);
             } else if (data.userIds) {
                 data.userIds.forEach((userId) => {
                     removeUser(userId);
-                    removeCursor(userId);
+                    cursorEngineRef?.current?.removeCursor(userId);
                 });
             }
         });
@@ -187,7 +137,72 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
                 duration: 3000,
             });
         });
-    }, [addStroke, addUser, removeCursor, removeUser, setIsConnected, setIsLoading, setStrokes, setUsers, updateCursor]);
+    }, [
+        addStroke,
+        addUser,
+        removeUser,
+        setIsConnected,
+        setIsLoading,
+        setStrokes,
+        setUsers,
+        cursorEngineRef,
+    ]);
+
+    // Main effect
+    useEffect(() => {
+        if (!whiteboardId) return;
+
+        console.log('🔌 Step 1: whiteboardId =', whiteboardId);
+
+        let socket = socketRef.current;
+        if (!socket) {
+            socket = initializeSocket();
+            console.log('🔌 Step 2: socket created =', socket?.id);
+            socketRef.current = socket;
+        }
+        if (!socket) return;
+        setupSocketListeners(socket);
+
+        // Set connection status
+        if (socket.connected) {
+            setIsConnected(true);
+        } else {
+            setIsConnected(false);
+        }
+
+        // Join whiteboard room
+        if (socket && !hasJoinedRef.current) {
+            socket.emit('join_whiteboard', { whiteboardId });
+            hasJoinedRef.current = true;
+            console.log('🔌 Step 3: emitted join_whiteboard');
+        }
+
+        // Cleanup
+        return () => {
+            console.log('🔌 Cleaning up socket for whiteboard:', whiteboardId);
+
+            if (socket && hasJoinedRef.current) {
+                socket.emit('leave_whiteboard');
+                hasJoinedRef.current = false;
+            }
+
+            // Remove all listeners
+            socket?.off('connect');
+            socket?.off('connect_error');
+            socket?.off('disconnect');
+            socket?.off('whiteboard_state');
+            socket?.off('stroke_drawn');
+            socket?.off('batch_drawn');
+            socket?.off('cursor_moved');
+            socket?.off('user_joined');
+            socket?.off('user_left');
+            socket?.off('snapshot_created');
+            socket?.off('error');
+            socket?.off('rate_limit_exceeded');
+
+            reset();
+        };
+    }, [whiteboardId, setupSocketListeners, setIsConnected, reset]);
 
     // Send single stroke (fallback)
     const sendStroke = useCallback((stroke: Stroke) => {
@@ -205,7 +220,7 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
                 timestamp: Date.now(),
             };
 
-            console.log('📤 Sending batch:', batch);
+            console.log('📤 Sending batch:', batch.strokes.length, 'strokes');
             socketRef.current.emit('draw_batch', batch);
             clearBatch();
         }
@@ -226,7 +241,7 @@ export const useWhiteboardSocket = (whiteboardId: string | undefined) => {
         }
     }, []);
 
-    // Auto-send batch when it fills up or after inactivity
+    // Auto-send batch when it fills up
     useEffect(() => {
         if (strokeBatch.length >= 10) {
             sendBatch();
