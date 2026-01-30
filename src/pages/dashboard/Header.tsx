@@ -1,17 +1,15 @@
 import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Input } from "../../components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { toast } from "sonner"
-import { useCallback, useState } from "react"
-import { CreateWhiteboardDTO } from "@/types/board.type"
-import { whiteboardApi } from "@/lib/api/whiteboard.api"
 import { useWhiteboard } from "@/hooks/use-whiteboard"
 import { useNavigate } from "react-router-dom";
-
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { LogOut, UserPen } from "lucide-react";
+import { useAuthStore, useUser } from "@/store/AuthStore";
 
 const HeaderDashboard = () => {
+    const user = useUser(); // ✅ Optimized selector
+    const logout = useAuthStore((state) => state.logout);
+
     const navigate = useNavigate()
     const { createWhiteboard } = useWhiteboard()
     const handleCreateBoard = async () => {
@@ -42,11 +40,57 @@ const HeaderDashboard = () => {
             <div className="flex justify-around gap-4">
                 <button type="submit"
                     onClick={handleCreateBoard}
-                    className="bg-blue-600 text-white text-sm font-bold px-2 rounded-xl hover:bg-blue-700 transform active:scale-95 transition duration-150">New Board</button>
-                <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
+                    className="bg-blue-600 text-white text-sm font-bold px-2 rounded-xl hover:bg-blue-700 hover:cursor-pointer hover:shadow-md hover:shadow-cyan-500/50 transform active:scale-95 transition duration-150">New Board</button>
+                <DropdownMenu modal={false}>
+                    {/* 1. modal={false} ngăn Radix thêm 'pointer-events: none' và 'margin-right' vào body */}
+
+                    <DropdownMenuTrigger asChild>
+                        <Avatar className="cursor-pointer">
+                            {user?.avatar ? (
+                                <AvatarImage src={user.avatar} />
+                            ) : (
+                                <>
+                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </>
+                            )}
+                        </Avatar>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent
+                        className="w-30 bg-gray-300 border-0 "
+                        side="bottom"
+                        align="end"
+                        sideOffset={8}
+                        // 2. Ngăn việc tự động lấy lại focus vào trigger gây giật trang trên một số trình duyệt
+                        onCloseAutoFocus={(e) => {
+                            e.preventDefault();
+                        }}
+                    >
+
+
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-200">
+                                <UserPen />My profile
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 cursor-pointer hover:bg-gray-200"
+                                onSelect={async () => {
+                                    try {
+                                        await logout();
+                                    } finally {
+                                        // Dù API logout có lỗi hay không, ta vẫn đá user về login
+                                        window.location.href = '/login';
+                                    }
+                                }}
+                            >
+                                <LogOut /> Log out
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
             </div>
         </header>
     )

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { LoginFormValues, loginSchema } from "@/schemas/auth.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form"
-import { CircleUser, LockKeyhole, Mail } from "lucide-react"
+import { LockKeyhole, Mail } from "lucide-react"
 import { Input } from "../../components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,17 +17,17 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { error } from "console"
 import { Label } from "../../components/ui/label"
 import { useState } from "react"
-import apiClient from "@/lib/api/client"
-import { authApi } from "@/lib/api/auth.api"
 import { toast } from "sonner"
 import { ROUTES } from "@/lib/contants/routes"
+import { useAuthStore } from "@/store/AuthStore"
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton"
 
 const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
+    const login = useAuthStore((state) => state.login)
 
 
     const form = useForm<LoginFormValues>({
@@ -43,9 +43,7 @@ const LoginPage = () => {
 
         setIsLoading(true)
         try {
-            const response = await authApi.login(values)
-            localStorage.setItem("accessToken", response.result.accessToken)
-            localStorage.setItem("refreshToken", response.result.refreshToken)
+            await login(values)
 
             toast.success('Account created successfully!', {
                 description: 'Welcome to Mozin. Redirecting to dashboard...',
@@ -65,8 +63,8 @@ const LoginPage = () => {
                 )
             } else {
                 // ✅ Error toast with Sonner
-                toast.error('Registration failed', {
-                    description: error?.response?.data?.message ?? "Hello",
+                toast.error('Login failed', {
+                    description: error?.response?.data?.message,
                     duration: 4000,
                 })
             }
@@ -191,12 +189,7 @@ const LoginPage = () => {
                                             <div className="flex-1 border-t border-gray-300" />
 
                                         </div>
-                                        <Button
-                                            type="submit"
-                                            className="w-full mt-5 shadow-none outline-gray-400 outline-1 rounded-xl flex items-center justify-center gap-2 hover:cursor-pointer">
-                                            <img src={logo_google} alt="Google" className="h-4 w-4" />
-                                            Google
-                                        </Button>
+                                        <GoogleLoginButton disabled={isLoading} />
 
                                         <p className="text-center text-sm my-7">Don't have an account? <a href="/register" className="text-blue-500">Sign up</a></p>
                                     </Card>

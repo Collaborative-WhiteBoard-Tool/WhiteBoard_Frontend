@@ -1,11 +1,15 @@
+
 export interface User {
     id: string;
     username: string;
     email: string;
-    firstName?: string;
-    lastName?: string;
+    displayname: string;
     avatar?: string;
+    avatarID?: string;
+    provider: string;
+    emailVerified: boolean;
     createdAt: string;
+    updatedAt: string;
 }
 
 export interface ApiResponse<T> {
@@ -21,21 +25,17 @@ export interface AuthResult {
 }
 export type AuthResponse = ApiResponse<AuthResult>
 
-// Error response 
-export interface ApiValidationError {
-    status: "fail"
-    code: number
-    message: string
-    errors: {
-        path: string
-        message: string
-    }[]
+
+// Oauth Google
+export interface LoginCredentials {
+    email: string;
+    password: string;
 }
 
-export interface ApiServerError {
-    status: "error"
-    code: number
-    message: string
+export interface RegisterCredentials {
+    username: string;
+    email: string;
+    password: string;
 }
 
-export type ApiError = ApiValidationError | ApiServerError
+export type AuthProvider = 'local' | 'google';

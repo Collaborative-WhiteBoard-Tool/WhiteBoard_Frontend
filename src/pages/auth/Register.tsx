@@ -10,14 +10,15 @@ import logo_google from "/src/assets/logo_google.svg";
 import { CircleUser, LockKeyhole, Mail, RotateCcwKey } from "lucide-react"
 import work_poster from "../../assets/Work_Poster.png";
 import { toast } from "sonner"
-
 import { useState } from "react"
-import { authApi } from "@/lib/api/auth.api"
 import { ROUTES } from "@/lib/contants/routes"
+import { useAuthStore } from "@/store/AuthStore"
+import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton"
 
 const RegisterPage = () => {
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
+    const register = useAuthStore((state) => state.register)
 
     const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
@@ -34,11 +35,7 @@ const RegisterPage = () => {
         setIsLoading(true)
         const { confirmPassword, ...payload } = values
         try {
-            const response = await authApi.register(payload);
-            // Store tokens
-            localStorage.setItem('accessToken', response.result.accessToken);
-            localStorage.setItem('refreshToken', response.result.refreshToken);
-
+            const response = await register(payload);
             console.log('res: ', response)
             //  ✅ Success toast with Sonner
             toast.success('Account created successfully!', {
@@ -62,7 +59,7 @@ const RegisterPage = () => {
             } else {
                 // ✅ Error toast with Sonner
                 toast.error('Registration failed', {
-                    description: error?.response?.data?.message ?? "Hello",
+                    description: error?.response?.data?.message,
                     duration: 4000,
                 })
             }
@@ -206,12 +203,7 @@ const RegisterPage = () => {
                         </div>
 
 
-                        <Button
-                            type="submit"
-                            className="w-full mt-4 shadow-none outline-gray-400 outline-1 rounded-3xl flex items-center justify-center gap-2 hover:cursor-pointer">
-                            <img src={logo_google} alt="Google" className="h-4 w-4" />
-                            Google
-                        </Button>
+                        <GoogleLoginButton text="Sign up with Google" disabled={isLoading} />
                         <div className="box-term_check flex justify-center mt-5 gap-1">
                             <input type="checkbox" title="terms" />
                             <p className="text-[12px]  text-gray-500">
@@ -220,14 +212,14 @@ const RegisterPage = () => {
                     </div>
                 </section>
 
-                <div className="box_section flex flex-1 overflow-hidden bg-black">
-                    {/* <section className="w-1/2 flex items-center justify-center overflow-hidden mx-auto">
+                <div className="box_section flex flex-1 overflow-hidden bg-gray-100">
+                    <section className="w-1/2 flex items-center justify-center overflow-hidden mx-auto">
                         <img
                             src={work_poster}
                             alt=""
                             className="max-w-full max-h-full object-contain rounded-2xl"
                         />
-                    </section> */}
+                    </section>
                 </div>
 
             </div >
