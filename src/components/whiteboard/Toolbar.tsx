@@ -1,7 +1,9 @@
 import React from 'react';
 import {
-    Pen, Eraser, Minus, Square, Circle, MousePointer, ZoomIn, ZoomOut, RotateCcw,
-    Grid3x3
+    Pen, Eraser, Minus, Square, Circle, MousePointer,
+    Grid3x3,
+    Undo,
+    Redo,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -15,9 +17,10 @@ import { useCanvasStore } from '@/store/CanvasStore';
 import { DrawTool } from '@/types/canvas.type';
 
 
-export const Toolbar: React.FC = () => {
-    const { showGrid, setShowGrid } = useCanvasStore();
+export const Toolbar: React.FC<{ onUndo: () => void, onRedo: () => void }> = ({ onRedo, onUndo }) => {
+    const { showGrid, setShowGrid, canUndo, canRedo } = useCanvasStore();
     const { tool, color, width, setTool, setColor, setWidth } = useCanvasStore();
+
 
     const tools: { icon: React.ReactNode; value: DrawTool; label: string; shortcut: string }[] = [
         { icon: <Pen className="h-4 w-4" />, value: 'pen', label: 'Pen', shortcut: 'P' },
@@ -134,14 +137,14 @@ export const Toolbar: React.FC = () => {
 
                 {/* Stroke width */}
                 <div className="flex items-center gap-3 min-w-[200px]">
-                    <span className="text-sm font-medium text-gray-700">Width:</span>
+                    <span className="text-sm font-medium text-gray-700 ">Width:</span>
                     <Slider
                         value={[width]}
                         onValueChange={(values: number[]) => setWidth(values[0])}
                         min={1}
                         max={20}
                         step={1}
-                        className="flex-1"
+                        className="flex-1 bg-gray-300 rounded-2xl"
                     />
                     <span className="text-sm font-medium w-10 text-right">{width}px</span>
                 </div>
@@ -151,17 +154,7 @@ export const Toolbar: React.FC = () => {
 
                 {/* Additional tools */}
                 <div className="flex gap-1">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon">
-                                <RotateCcw className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Undo (Ctrl+Z)</p>
-                        </TooltipContent>
-                    </Tooltip>
-
+                    {/* 
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="outline" size="icon">
@@ -182,7 +175,27 @@ export const Toolbar: React.FC = () => {
                         <TooltipContent>
                             <p>Zoom Out</p>
                         </TooltipContent>
-                    </Tooltip>
+                    </Tooltip> */}
+
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className='hover:bg-gray-300'
+                        onClick={onUndo}
+                        disabled={!canUndo}
+                    >
+                        <Undo className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className='hover:bg-gray-300'
+                        onClick={onRedo}
+                        disabled={!canRedo}
+                    >
+                        <Redo className="h-4 w-4" />
+                    </Button>
 
                     <Button
                         variant={showGrid ? "default" : "outline"}

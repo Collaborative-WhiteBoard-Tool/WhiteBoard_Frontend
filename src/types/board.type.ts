@@ -14,6 +14,8 @@ export interface WhiteboardResponse {
     description: string | null
     isPublic: boolean
     type: string | null
+    thumbnailUrl?: string;
+    thumbnailUpdatedAt?: string;
     createdAt: Date
     updatedAt: Date
     owner: {
@@ -49,6 +51,8 @@ export interface WhiteBoardItem {
     description: string | null
     isPublic: boolean
     type: string | null
+    thumbnailUrl?: string;
+    thumbnailUpdatedAt?: string;
     owner: {
         id: string;
         username: string;

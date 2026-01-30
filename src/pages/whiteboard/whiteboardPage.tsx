@@ -2,14 +2,16 @@ import { Button } from "@/components/ui/button"
 import { useWhiteboard } from "@/hooks/use-whiteboard"
 import { ROUTES } from "@/lib/contants/routes"
 import { useCanvasStore } from "@/store/CanvasStore"
-import { ArrowLeft, Maximize2, Minimize2, UsersIcon } from "lucide-react"
+import { ArrowLeft, Maximize2, Minimize2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
 import Canvas from "@/components/whiteboard/Canvas"
 import { UserList } from "./UserList"
 import { ConnectionStatus } from "./ConnectionStatus"
-import Toolbar from "@/components/whiteboard/Toolbar"
+import { Toolbar } from "@/components/whiteboard/Toolbar"
+import { useWhiteboardSocket } from "@/hooks/use-whiteboardSocket"
+import { WhiteboardAutoSave } from "@/components/whiteboard/WhiteboardAutoSave"
 
 export const WhiteboardPage = () => {
 
@@ -17,13 +19,14 @@ export const WhiteboardPage = () => {
     const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const [showUsers, setShowUsers] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [canvasReady, setCanvasReady] = useState(false);
 
     const { currentWhiteboard, isLoading: whiteboardLoading, fetchWhiteboardById } = useWhiteboard();
     const { isLoading: canvasLoading, setIsLoading: setCanvasLoading } = useCanvasStore();
 
+
+    const { sendUndo, sendRedo } = useWhiteboardSocket(id, null);
 
 
     // Fetch whiteboard metadata
@@ -80,6 +83,18 @@ export const WhiteboardPage = () => {
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
 
+    //Shortcut undo/redo
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                if (e.shiftKey) sendRedo(); else sendUndo();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [sendUndo, sendRedo]);
+
     const handleToggleFullscreen = () => {
         if (!document.fullscreenElement) {
             containerRef.current?.requestFullscreen();
@@ -102,6 +117,7 @@ export const WhiteboardPage = () => {
 
     return (
         <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+            <WhiteboardAutoSave whiteboardId={id!} />
             {/* Header: Chỉ hiện khi không fullscreen */}
             {!isFullscreen && currentWhiteboard && (
                 <header className="bg-white border-b shadow-sm z-20">
@@ -117,17 +133,19 @@ export const WhiteboardPage = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setShowUsers(!showUsers)}>
+
+                        <div className="flex items-center gap-6">
+                            {<UserList />}
+                            {/* <Button variant="outline" size="sm" onClick={() => setShowUsers(!showUsers)}>
                                 <UsersIcon className="h-4 w-4 mr-2" />
                                 {showUsers ? 'Hide' : 'Show'} Users
-                            </Button>
+                            </Button> */}
                             <Button variant="outline" size="sm" onClick={handleToggleFullscreen}>
-                                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                                {isFullscreen ? <Minimize2 className="h-2 w-2" /> : <Maximize2 className="h-2 w-2" />}
                             </Button>
                         </div>
                     </div>
-                    <Toolbar />
+                    <Toolbar onUndo={sendUndo} onRedo={sendRedo} />
                 </header>
             )}
 
@@ -160,12 +178,11 @@ export const WhiteboardPage = () => {
                 )}
 
                 {/* Overlays UI */}
-                {showUsers && <UserList />}
                 <ConnectionStatus />
 
                 {isFullscreen && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
-                        <Toolbar />
+                        <Toolbar onUndo={sendUndo} onRedo={sendRedo} />
                     </div>
                 )}
             </main>

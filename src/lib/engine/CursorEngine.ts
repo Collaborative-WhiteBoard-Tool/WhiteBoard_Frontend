@@ -2,6 +2,7 @@
 import { Cursor } from '@/types/canvas.type';
 
 export class CursorEngine {
+    private cursorImage: HTMLImageElement;
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
 
@@ -21,6 +22,8 @@ export class CursorEngine {
     private maxAge: number = 2000; // 2 seconds
 
     constructor(canvas: HTMLCanvasElement) {
+        this.cursorImage = new Image();
+        this.cursorImage.src = '/path-to-your-cursor-icon.svg';
         this.canvas = canvas;
         const ctx = canvas.getContext('2d', {
             alpha: true,
@@ -146,20 +149,51 @@ export class CursorEngine {
 
     private renderCursor(cursor: Cursor) {
         const { ctx } = this;
+        const { x, y, color, username, displayname } = cursor;
 
-        // Draw circle
         ctx.save();
-        ctx.fillStyle = cursor.color;
-        ctx.globalAlpha = 0.8;
+
+        // 1. Cấu hình đổ bóng (Shadow) để con trỏ nổi bật trên mọi nền
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        // 2. Vẽ hình mũi tên (Arrow Shape)
+        ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(cursor.x, cursor.y, 6, 0, Math.PI * 2);
+        ctx.moveTo(x, y);                          // Đỉnh mũi tên
+        ctx.lineTo(x, y + 17);                     // Cạnh trái
+        ctx.lineTo(x + 4.5, y + 12.5);             // Khía dưới trái
+        ctx.lineTo(x + 7.5, y + 11.5);             // Khía dưới phải
+        ctx.lineTo(x + 13, y + 11.5);              // Cạnh phải
+        ctx.closePath();
         ctx.fill();
 
-        // Draw username
-        ctx.fillStyle = cursor.color;
+        // 3. Vẽ viền trắng để dễ nhìn trên các stroke cùng màu
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 4. Vẽ Username
+        // Tắt shadow cho chữ để tránh bị nhòe
+        ctx.shadowColor = 'transparent';
+
+        // Vẽ background nhỏ cho tên (tùy chọn - giúp dễ đọc hơn)
+        const textMetrics = ctx.measureText(displayname ?? username ?? "");
+        const padding = 4;
+        ctx.globalAlpha = 0.8;
+        // ctx.fillStyle = color;
+        ctx.roundRect(x + 14, y + 14, (textMetrics.width + 13) + padding * 2, 20, 4);
+        ctx.fill();
+
+        // Vẽ text
         ctx.globalAlpha = 1;
-        ctx.font = '12px sans-serif';
-        ctx.fillText(cursor.username!, cursor.x + 10, cursor.y - 10);
+        ctx.fillStyle = 'white'; // Chữ trắng trên nền màu
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayname || username || "", x + 14 + padding, y + 14 + 10);
+
         ctx.restore();
     }
 }

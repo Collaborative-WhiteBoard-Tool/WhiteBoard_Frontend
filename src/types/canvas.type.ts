@@ -1,40 +1,41 @@
+
 export type DrawTool =
+    | 'select'
     | 'pen'
     | 'eraser'
     | 'line'
     | 'rectangle'
     | 'circle'
-    | 'select';
+    | 'pan'
 
+
+export interface Selection {
+    strokeIds: string[];
+    bounds: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+}
 export interface Point {
     x: number;
     y: number;
     pressure?: number;
 }
 
-
 export interface Stroke {
     id: string;
-
     whiteboardId?: string; // optional (server sẽ gắn)
     userId: string;
     username?: string;
-
     /** Tool dùng để render */
     type: 'pen' | 'eraser' | 'line' | 'circle' | 'rectangle'
-
     /** Tool người dùng chọn */
     tool: DrawTool;
-
     color: string;
     width: number;
-
-    /**
-     * Konva Line format
-     * [x1, y1, x2, y2, ...]
-     */
     points: number[];
-
     timestamp: number;
 }
 
@@ -43,6 +44,7 @@ export interface Stroke {
 export interface Cursor {
     userId: string;
     username?: string;
+    displayname?: string | null
     color: string;
 
     x: number;

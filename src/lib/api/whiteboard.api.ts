@@ -20,5 +20,5 @@ export const whiteboardApi = {
     getById: async (boardId: string) => {
         const response = await apiClient.get<BoardResponse>(`/boards/${boardId}`)
         return response.data.result
-    }
+    },
 }

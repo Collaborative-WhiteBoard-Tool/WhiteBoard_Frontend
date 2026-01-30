@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Stroke, Cursor, UserPresence, DrawTool } from '@/types/canvas.type';
+import { Stroke, Cursor, UserPresence, DrawTool, Selection } from '@/types/canvas.type';
 
 type StrokeUpdater = (prev: Stroke | null) => Stroke | null;
 interface CanvasStore {
@@ -13,6 +13,10 @@ interface CanvasStore {
     tool: DrawTool;
     color: string;
     width: number;
+
+    // Selection state
+    selection: Selection | null;
+    deletedStrokeIds: string[];
 
     // UI state
     isDrawing: boolean;
@@ -32,6 +36,14 @@ interface CanvasStore {
     showGrid: boolean;
     gridSize: number;
 
+    // ✅ Undo/Redo state
+    canUndo: boolean;
+    canRedo: boolean;
+    undoCount: number;
+    redoCount: number;
+
+
+
     // ... existing actions
     setShowGrid: (show: boolean) => void;
     setGridSize: (size: number) => void;
@@ -42,6 +54,11 @@ interface CanvasStore {
     addStroke: (stroke: Stroke) => void;
     addLocalStroke: (stroke: Stroke) => void;
     clearLocalStrokes: () => void;
+    deleteStrokes: (strokeIds: string[]) => void;
+
+    // Selection actions
+    setSelection: (selection: Selection | null) => void;
+    clearSelection: () => void;
 
     // Actions - Batch Management
     addStrokeToBatch: (stroke: Stroke) => void;
@@ -71,6 +88,9 @@ interface CanvasStore {
     // Actions - Performance
     updateFPS: () => void;
 
+    // ✅ Actions - Undo/Redo
+    setUndoRedoStatus: (status: { canUndo: boolean; canRedo: boolean; undoCount: number; redoCount: number }) => void;
+
     // Actions - Reset
     reset: () => void;
 
@@ -87,6 +107,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     color: '#000000',
     width: 2,
 
+    selection: null,
+    deletedStrokeIds: [],
+
     isDrawing: false,
     currentStroke: null,
     isConnected: false,
@@ -98,6 +121,10 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     fps: 60,
     lastFrameTime: Date.now(),
 
+    canUndo: false,
+    canRedo: false,
+    undoCount: 0,
+    redoCount: 0,
 
     // ... existing state
     showGrid: true,
@@ -132,6 +159,17 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     clearLocalStrokes: () => {
         set({ localStrokes: [] });
     },
+
+    deleteStrokes: (strokeIds) => {
+        set((state) => ({
+            strokes: state.strokes.filter(s => !strokeIds.includes(s.id)),
+            deletedStrokeIds: [...state.deletedStrokeIds, ...strokeIds]
+        }));
+    },
+
+    setSelection: (selection) => set({ selection }),
+
+    clearSelection: () => set({ selection: null }),
 
     // Batch management with auto-flush
     addStrokeToBatch: (stroke) => {
@@ -215,7 +253,13 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     },
 
     // Tool management
-    setTool: (tool) => set({ tool }),
+    setTool: (tool) => {
+        set({ tool });
+        // Clear selection when switching away from select tool
+        if (tool !== 'select') {
+            set({ selection: null });
+        }
+    },
     setColor: (color) => set({ color }),
     setWidth: (width) => set({ width }),
 
@@ -232,6 +276,16 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         }),
     setIsConnected: (isConnected) => set({ isConnected }),
     setIsLoading: (isLoading) => set({ isLoading }),
+
+
+    // ✅ Undo/Redo
+    setUndoRedoStatus: (status) => set({
+        canUndo: status.canUndo,
+        canRedo: status.canRedo,
+        undoCount: status.undoCount,
+        redoCount: status.redoCount
+    }),
+
 
     // Performance tracking
     updateFPS: () => {
@@ -254,9 +308,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
             localStrokes: [],
             cursors: new Map(),
             users: [],
-            tool: 'pen',
+            tool: 'select',
             color: '#000000',
             width: 2,
+            selection: null,
+            deletedStrokeIds: [],
             isDrawing: false,
             currentStroke: null,
             isConnected: false,
@@ -265,6 +321,8 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
             batchTimer: null,
             fps: 60,
             lastFrameTime: Date.now(),
+            showGrid: true,
+            gridSize: 20
         });
     },
 

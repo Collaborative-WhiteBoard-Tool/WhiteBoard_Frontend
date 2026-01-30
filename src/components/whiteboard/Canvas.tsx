@@ -4,7 +4,7 @@ import { useCanvasStore } from '@/store/CanvasStore';
 import { useWhiteboardSocket } from '@/hooks/use-whiteboardSocket';
 import { DrawingEngine } from '@/lib/engine/DrawingEngine';
 import { CursorEngine } from '@/lib/engine/CursorEngine';
-import { DrawTool } from '@/types/canvas.type';
+
 
 interface CanvasProps {
     whiteboardId: string;
@@ -30,30 +30,34 @@ const Canvas = memo<CanvasProps>(({ whiteboardId, width, height }) => {
     const drawingEngineRef = useRef<DrawingEngine | null>(null);
     const cursorEngineRef = useRef<CursorEngine | null>(null);
 
-    // Store
-    const {
-        strokes,
-        tool,
-        color,
-        width: strokeWidth,
-        showGrid,
-        gridSize,
-        addLocalStroke,
-        addStrokeToBatch,
-        clearLocalStrokes,
-    } = useCanvasStore();
+    // Track if currently drawing
+    const isDrawingRef = useRef(false);
 
-    const { sendBatch, sendCursor, isConnected } = useWhiteboardSocket(
+    const isPanningRef = useRef(false);
+    const lastPanPointRef = useRef<{ x: number; y: number } | null>(null);
+    const panStartedOnEmptyRef = useRef(false); //Track nếu pan bắt đầu từ vùng trống 
+    // Track pending moves (debounced)
+    const pendingMovesRef = useRef<Array<{ strokeId: string; points: number[] }>>([]);
+
+
+
+    const strokes = useCanvasStore(state => state.strokes)
+    const tool = useCanvasStore(state => state.tool)
+    const color = useCanvasStore(state => state.color)
+    const strokeWidth = useCanvasStore(state => state.width)
+    const showGrid = useCanvasStore(state => state.showGrid)
+    const gridSize = useCanvasStore(state => state.gridSize)
+
+    const addLocalStroke = useCanvasStore(state => state.addLocalStroke)
+    const addStrokeToBatch = useCanvasStore(state => state.addStrokeToBatch)
+    const clearLocalStrokes = useCanvasStore(state => state.clearLocalStrokes)
+    const deleteStrokes = useCanvasStore(state => state.deleteStrokes)
+    const setSelection = useCanvasStore(state => state.setSelection)
+
+    const { sendBatch, sendCursor, isConnected, sendDelete, sendMove } = useWhiteboardSocket(
         whiteboardId,
         cursorEngineRef as React.RefObject<CursorEngine>
     );
-
-    // Transform state (still in React for UI controls like zoom buttons)
-    // const [stageScale, setStageScale] = useState(1);
-    // const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
-
-    // Track if currently drawing
-    const isDrawingRef = useRef(false);
 
     // ========== Initialize Engines ==========
 
@@ -72,6 +76,21 @@ const Canvas = memo<CanvasProps>(({ whiteboardId, width, height }) => {
                 addLocalStroke(stroke);
                 addStrokeToBatch(stroke);
             },
+            onStrokesDeleted: (strokeIds) => {
+                console.log('🗑️ Strokes deleted:', strokeIds);
+                deleteStrokes(strokeIds);
+                sendDelete(strokeIds)
+                // TODO: Send deletion to server
+            },
+            onStrokesMoved: (updates) => {
+                console.log('🔄 Strokes moved locally:', updates.length);
+                // Accumulate moves
+                pendingMovesRef.current = updates;
+            },
+            onSelectionChange: (selection) => {
+                console.log('📦 Selection changed:', selection);
+                setSelection(selection);
+            }
         });
 
         drawingEngineRef.current = drawingEngine;
@@ -89,7 +108,7 @@ const Canvas = memo<CanvasProps>(({ whiteboardId, width, height }) => {
             drawingEngine.destroy();
             cursorEngine.destroy();
         };
-    }, [addLocalStroke, addStrokeToBatch]);
+    }, [addLocalStroke, addStrokeToBatch, deleteStrokes, setSelection]);
 
     // ========== Handle Window Resize ==========
 
@@ -160,33 +179,96 @@ const Canvas = memo<CanvasProps>(({ whiteboardId, width, height }) => {
 
         return { x: worldX, y: worldY };
     }, [transform]);
+
+
     // ========== Pointer Handlers (NO setState for drawing) ==========
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
-        if (!isConnected || tool === 'select') return;
-        const { x, y } = getRelativeCoords(e);
-        drawingEngineRef.current?.startStroke(x, y);
+        if (!isConnected) return;
 
+        const { x, y } = getRelativeCoords(e);
+
+        // ✅ SELECT TOOL: Pan nếu click vào vùng trống, hoặc select nếu click vào stroke
+        if (tool === 'select') {
+            // Kiểm tra xem có click vào stroke không (engine sẽ xử lý trong startStroke)
+            const clickedStroke = drawingEngineRef.current?.findStrokeAtPoint?.(x, y);
+
+            if (clickedStroke) {
+                // Click vào stroke → Select
+                drawingEngineRef.current?.startStroke(x, y);
+                panStartedOnEmptyRef.current = false;
+            } else {
+                // 1. Gọi engine để xóa khung selection hiện tại
+                drawingEngineRef.current?.startStroke(x, y);
+                // 2. Click vào vùng trống → Pan
+                isPanningRef.current = true;
+                lastPanPointRef.current = { x: e.clientX, y: e.clientY };
+                panStartedOnEmptyRef.current = true;
+            }
+            return;
+        }
+
+        // ✅ Các tool khác: Bắt đầu vẽ
         drawingEngineRef.current?.startStroke(x, y);
     }, [isConnected, tool, getRelativeCoords]);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
         if (!drawingCanvasRef.current) return;
 
+        // Ưu tiên xử lý Pan trước và thoát sớm
+        if (isPanningRef.current && lastPanPointRef.current) {
+            const dx = e.clientX - lastPanPointRef.current.x;
+            const dy = e.clientY - lastPanPointRef.current.y;
+
+            setTransform(prev => ({
+                ...prev,
+                x: prev.x + dx,
+                y: prev.y + dy
+            }));
+
+            lastPanPointRef.current = { x: e.clientX, y: e.clientY };
+            return; // Quan trọng: Thoát sớm để không gọi drawingEngine
+        }
+
         const { x, y } = getRelativeCoords(e);
 
-        // Vẽ lên engine (Sử dụng tọa độ World đã tính)
+        // Nếu không pan, mới xử lý Hover và Vẽ
+        if (tool === 'select' && !drawingEngineRef.current?.getIsDraggingSelection()) {
+            drawingEngineRef.current?.setHoveredStroke(x, y);
+        }
+
         drawingEngineRef.current?.addPoint(x, y);
 
-        // Gửi cursor cho các user khác
-        if (isConnected && tool !== 'eraser') {
+        if (isConnected && tool !== 'eraser' && tool !== 'select') {
             sendCursor(x, y, color);
         }
     }, [isConnected, tool, color, sendCursor, getRelativeCoords]);
 
     const handlePointerUp = useCallback(() => {
-        drawingEngineRef.current?.endStroke();
-    }, []);
+        // 1. Tắt panning bất kể tool nào nếu đang pan
+        if (isPanningRef.current) {
+            isPanningRef.current = false;
+            lastPanPointRef.current = null;
+            panStartedOnEmptyRef.current = false;
+            // Nếu là tool pan thuần túy thì return luôn
+            if (tool === 'pan') return;
+        }
 
+        // 2. Xử lý kết thúc di chuyển stroke cho tool select
+        if (tool === 'select' && pendingMovesRef.current.length > 0) {
+            console.log('📤 Sending accumulated moves:', pendingMovesRef.current.length);
+            sendMove(pendingMovesRef.current);
+            pendingMovesRef.current = [];
+        }
+
+        // 3. Kết thúc vẽ cho các tool khác
+        drawingEngineRef.current?.endStroke();
+    }, [tool, sendMove]);
+
+
+    const handlePointerLeave = useCallback(() => {
+        drawingEngineRef.current?.clearHover();
+        handlePointerUp();
+    }, [handlePointerUp]);
     // ========== Zoom Handling ==========
     // ========== Xử lý Wheel (Zoom) ==========
     const handleWheel = useCallback((e: WheelEvent) => {
@@ -254,20 +336,26 @@ const Canvas = memo<CanvasProps>(({ whiteboardId, width, height }) => {
     }, [strokes.length, sendBatch, clearLocalStrokes]); // Use strokes.length as proxy for drawing activity
 
 
-    const getCursorStyle = (tool: DrawTool): string => {
+    const getCursorStyle = (): string => {
+        // Đang pan
+        if (isPanningRef.current) return 'grabbing';
+
+        // Select tool  
+        if (tool === 'select') {
+            // Nếu đang kéo selection
+            const isDragging = drawingEngineRef.current?.getIsDraggingSelection?.();
+            if (isDragging) return 'move';
+
+            // Default: grab (có thể pan)
+            return 'grab';
+        }
         switch (tool) {
-            case 'pen':
-                return 'crosshair';
-            case 'eraser':
-                return 'cell';
+            case 'pen': return 'crosshair';
+            case 'eraser': return 'cell';
             case 'line':
             case 'circle':
-            case 'rectangle':
-                return 'crosshair'; // Hoặc custom cursor
-            case 'select':
-                return 'default';
-            default:
-                return 'default';
+            case 'rectangle': return 'crosshair';
+            default: return 'default';
         }
     };
 
@@ -294,11 +382,11 @@ const Canvas = memo<CanvasProps>(({ whiteboardId, width, height }) => {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
-                onPointerLeave={handlePointerUp}
+                onPointerLeave={handlePointerLeave}
                 className="absolute inset-0 "
                 style={{
                     touchAction: 'none', // Prevent default touch behaviors
-                    cursor: getCursorStyle(tool)
+                    cursor: getCursorStyle()
                 }}
             />
 

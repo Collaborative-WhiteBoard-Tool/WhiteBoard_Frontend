@@ -1,4 +1,3 @@
-import boardImg from '@/assets/anh4.jpg'
 import {
     Select,
     SelectContent,
@@ -87,9 +86,9 @@ const ListBoard = () => {
             {/* List board */}
             <section className="mx-3 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
                 {whiteboards.map((board) => (
-                    <Card key={board.id} onClick={() => navigate(`/whiteboard/${board.id}`)} className="w-[90%] max-w-sm overflow-hidden shadow-none border-none hover:scale-98 transition">
+                    <Card key={board.id} onClick={() => navigate(`/whiteboard/${board.id}`)} className="w-[90%] max-w-sm overflow-hidden shadow-none border-none hover:scale-98 transition hover:cursor-pointer">
                         <CardContent className="p-3">
-                            <img src={boardImg}
+                            <img src={board.thumbnailUrl}
                                 className="h-40 w-full object-cover rounded-2xl" alt="" />
                         </CardContent>
                         <CardFooter className="block  text-[12px]">
