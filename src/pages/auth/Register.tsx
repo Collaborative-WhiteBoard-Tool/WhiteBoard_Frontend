@@ -6,7 +6,6 @@ import { RegisterFormValues, registerSchema } from "@/schemas/auth.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
-import logo_google from "/src/assets/logo_google.svg";
 import { CircleUser, LockKeyhole, Mail, RotateCcwKey } from "lucide-react"
 import work_poster from "../../assets/Work_Poster.png";
 import { toast } from "sonner"
@@ -75,11 +74,15 @@ const RegisterPage = () => {
         <section className="min-h-screen flex flex-col ">
             <header className="flex justify-between  items-center border border-t-0 border-x-0 border-b-gray-200 py-2 px-20">
                 <div className="flex gap-1 justify-items-center items-center ">
-                    <Avatar>
-                        <AvatarImage src="\src\assets\logoMozin.svg" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <h1 style={{ fontSize: '20px', fontWeight: '600', fontFamily: 'cursive' }}>Mozin</h1>
+                    <Link to="/homepage" className="flex items-center gap-2 group">
+                        <Avatar className="h-10 w-10 ring-2 ring-gray-400 group-hover:ring-violet-500/40 transition-all">
+                            <AvatarImage src="\src\assets\logoMozin.svg" />
+                            <AvatarFallback className="bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 text-white font-bold">
+                                M
+                            </AvatarFallback>
+                        </Avatar>
+                       <h1 style={{ fontSize: '20px', fontWeight: '600', fontFamily: 'cursive' }}>Mozin</h1>
+                    </Link>
                 </div>
                 <div className="box_login flex justify-between items-center gap-3">
                     <p className="text-gray-500 font-medium text-sm">Already a member?</p>

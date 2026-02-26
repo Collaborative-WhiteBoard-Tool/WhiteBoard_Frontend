@@ -4,15 +4,15 @@ import { ApiResponse } from "./auth.type";
 
 
 
-export type CreateWhiteboardDTO = z.infer<typeof createNewBoardSchema>
-
-
 
 export interface WhiteboardResponse {
     id: string
     title: string
     description: string | null
     isPublic: boolean
+    isFavorite?: boolean  
+    isDeleted?: boolean  
+    deletedAt?: Date  
     type: string | null
     thumbnailUrl?: string;
     thumbnailUpdatedAt?: string;
@@ -50,6 +50,8 @@ export interface WhiteBoardItem {
     title: string
     description: string | null
     isPublic: boolean
+    isFavorite?: boolean 
+    isDeleted?: boolean   
     type: string | null
     thumbnailUrl?: string;
     thumbnailUpdatedAt?: string;
@@ -74,5 +76,20 @@ export interface CollaboratorResponse {
     };
 }
 
+export interface RenameBoardDTO {
+    title: string;
+}
+
+export interface ToggleFavoriteDTO {
+    isFavorite: boolean;
+}
+
+export interface ShareBoardDTO {
+    userEmail: string;
+    role: 'EDITOR' | 'VIEWER';
+}
+
 export type ListBoardsResponse = ApiResponse<ListBoardsResponseData>
 export type BoardResponse = ApiResponse<WhiteboardResponse>
+export type BasicResponse = ApiResponse<null>
+export type CreateWhiteboardDTO = z.infer<typeof createNewBoardSchema>

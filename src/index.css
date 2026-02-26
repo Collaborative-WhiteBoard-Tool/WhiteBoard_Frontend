@@ -5,14 +5,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* body{
-  --tw-gradient-position: 65deg;
-    @supports (background-image: linear-gradient(in lab, red, red)) {
-        --tw-gradient-position: 65deg in oklab;
+@keyframes gradient {
+    0%, 100% { 
+        background-position: 0% 50%; 
     }
-    background-image: linear-gradient(var(--tw-gradient-stops));
-  
-} */
+    50% { 
+        background-position: 100% 50%; 
+    }
+}
+
+.animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+}
+
 
 @layer base {
   :root {

@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
-import logo_google from "../../assets/logo_google.svg"
 import { useForm } from "react-hook-form"
 import { LoginFormValues, loginSchema } from "@/schemas/auth.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,7 +9,6 @@ import { Input } from "../../components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
     Card,
-
     CardContent,
     CardDescription,
     CardFooter,
@@ -28,7 +26,6 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
     const login = useAuthStore((state) => state.login)
-
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -62,7 +59,6 @@ const LoginPage = () => {
                     }
                 )
             } else {
-                // ✅ Error toast with Sonner
                 toast.error('Login failed', {
                     description: error?.response?.data?.message,
                     duration: 4000,
@@ -74,137 +70,176 @@ const LoginPage = () => {
         }
     }
 
-
-
     return (
-        <div className="wrapper  ">
-            <section className="min-h-screen flex flex-col">
-                <header className="flex justify-between items-center border border-t-0 border-x-0 border-b-gray-200 py-2 px-20">
-                    <div className="flex gap-1 justify-items-center items-center ">
-                        <Avatar>
+        <div className="wrapper min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 relative overflow-hidden">
+            {/* Decorative blobs */}
+            <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-violet-200/40 to-purple-200/40 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-fuchsia-200/40 to-pink-200/40 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-purple-200/30 to-violet-200/30 rounded-full blur-3xl animate-pulse delay-500"></div>
+
+            <section className="relative z-10 min-h-screen flex flex-col">
+                {/* Header */}
+                <header className="flex justify-between items-center border-b border-white/40 backdrop-blur-md bg-white/60 py-4 px-20">
+                    <Link to="/homepage" className="flex items-center gap-2 group">
+                        <Avatar className="h-10 w-10 ring-2 ring-violet-500/20 group-hover:ring-violet-500/40 transition-all">
                             <AvatarImage src="\src\assets\logoMozin.svg" />
-                            <AvatarFallback>CN</AvatarFallback>
+                            <AvatarFallback className="bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 text-white font-bold">
+                                M
+                            </AvatarFallback>
                         </Avatar>
-                        <h1 style={{ fontSize: '20px', fontWeight: '600', fontFamily: 'cursive' }}>Mozin</h1>
-                    </div>
-                    <div className="box_login flex justify-between items-center gap-3">
-                        <div className="box_menu">
-                            <ul className="flex gap-2 mr-3">
-                                <li className="mx-2 font-medium text-sm text-gray-700 hover:underline hover:decoration-1 transition">
-                                    <Link to="/homepage">
+                        <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+                            Mozin
+                        </h1>
+                    </Link>
+
+                    <div className="flex items-center gap-6">
+                        <div className="hidden md:block">
+                            <ul className="flex gap-6">
+                                <li>
+                                    <Link to="/homepage" className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-colors">
                                         Home
                                     </Link>
                                 </li>
-                                <li className="mx-2 font-medium text-sm text-gray-700">
-                                    <Link to="#">About</Link>
+                                <li>
+                                    <Link to="#" className="text-sm font-medium text-slate-700 hover:text-violet-600 transition-colors">
+                                        About
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
                         <Link to="/register">
-                            <button className="hover:cursor-pointer px-7 py-2 bg-gray-300 rounded-3xl text-sm font-bold hover:bg-gray-700 hover:text-white transition">Sign up</button>
+                            <button className="px-6 py-2.5 text-sm font-semibold text-violet-600 bg-white border border-violet-200 rounded-xl hover:bg-violet-50 hover:border-violet-300 transition-all duration-300 shadow-sm hover:shadow">
+                                Sign up
+                            </button>
                         </Link>
                     </div>
                 </header>
 
+                {/* Main Content */}
+                <div className="flex flex-1 items-center justify-center p-8">
+                    <div className="w-full max-w-md">
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)}>
+                                <Card className="border-0 shadow-2xl shadow-violet-500/10 bg-white/80 backdrop-blur-xl px-5">
+                                    <CardHeader className="text-center space-y-4 pb-5">
+                                        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+                                            Welcome back
+                                        </CardTitle>
+                                        <CardDescription className="text-slate-600">
+                                            Enter your credentials to access your account
+                                        </CardDescription>
+                                    </CardHeader>
 
-                <div className="bg-gray-100 flex flex-1 justify-center ">
-                    <div className="box_login flex items-center justify-center  ">
-                        <div className="box_form bg-white rounded-2xl w-md flex justify-center ">
+                                    <CardContent className="space-y-5">
+                                        {/* Email Field */}
+                                        <FormField 
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field, fieldState }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-sm font-semibold text-slate-700">
+                                                        Email address
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <div className="relative group">
+                                                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-violet-600 transition-colors" />
+                                                            <Input 
+                                                                id="email" 
+                                                                placeholder="example@gmail.com" 
+                                                                className="pl-10 h-10 rounded-xl border-slate-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-500/20 aria-invalid:border-red-500 aria-invalid:ring-red-500/20 transition-all"
+                                                                aria-invalid={fieldState.invalid} 
+                                                                {...field} 
+                                                            />
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage className="text-[10px] text-red-600" />
+                                                </FormItem>
+                                            )}
+                                        />
 
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)}>
-
-                                    <Card className="w-full shadow-none max-w-sm ">
-                                        <CardHeader className="text-center">
-                                            <CardTitle className="text-4xl font-bold">Welcome back</CardTitle>
-                                            <CardDescription className="text-gray-500">
-                                                Enter your email below to login to your account
-                                            </CardDescription>
-                                        </CardHeader>
-
-                                        <CardContent>
-
-                                            <div className="flex flex-col">
-                                                <div className="grid gap-2 mb-3">
-                                                    {/***************  Email Field  ***************** */}
-                                                    <FormField control={form.control}
-                                                        name="email"
-                                                        render={({ field, fieldState }) => (
-                                                            <FormItem >
-                                                                <FormLabel htmlFor="email">Email address</FormLabel>
-                                                                <FormControl>
-                                                                    <div className="relative">
-                                                                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                                                        <Input id="email" placeholder="example123@gmail.com" className="pl-10 mt-1.5 rounded-xl border-gray-400 mb-2 aria-invalid:border-red-500  aria-invalid:ring-red-500"
-                                                                            aria-invalid={fieldState.invalid} {...field} />
-                                                                    </div>
-                                                                </FormControl>
-                                                                <FormMessage className="text-red-600 text-[10px]" />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                                <div className="grid gap-2">
-                                                    <div className="flex items-center">
-                                                        <Label htmlFor="password">Password</Label>
-                                                        <a href="#"
-                                                            className="ml-auto inline-block text-[13px] text-blue-800 font-medium underline-offset-4 hover:underline">
+                                        {/* Password Field */}
+                                        <FormField 
+                                            control={form.control}
+                                            name="password"
+                                            render={({ field, fieldState }) => (
+                                                <FormItem>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <Label className="text-sm font-semibold text-slate-700">
+                                                            Password
+                                                        </Label>
+                                                        <a href="#" className="text-xs text-violet-600 font-medium hover:text-violet-700 hover:underline transition-colors">
                                                             Forgot password?
                                                         </a>
                                                     </div>
-                                                    {/***************  Password Field  ***************** */}
-                                                    <FormField control={form.control}
-                                                        name="password"
-                                                        render={({ field, fieldState }) => (
-                                                            <FormItem >
-                                                                <FormControl>
-                                                                    <div className="relative">
-                                                                        <LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                                                        <Input id="password" type="password" className="pl-10 rounded-xl border-gray-400  aria-invalid:border-red-500  aria-invalid:ring-red-500"
-                                                                            placeholder="••••••"
-                                                                            aria-invalid={fieldState.invalid} {...field} />
-                                                                    </div>
-                                                                </FormControl>
-                                                                <FormMessage className="text-red-600 text-[10px]" />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </div>
-                                            </div>
+                                                    <FormControl>
+                                                        <div className="relative group">
+                                                            <LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-violet-600 transition-colors" />
+                                                            <Input 
+                                                                id="password" 
+                                                                type="password" 
+                                                                placeholder="••••••••"
+                                                                className="pl-10 h-10 rounded-xl border-slate-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-500/20 aria-invalid:border-red-500 aria-invalid:ring-red-500/20 transition-all"
+                                                                aria-invalid={fieldState.invalid} 
+                                                                {...field} 
+                                                            />
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage className="text-[10px] text-red-600" />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </CardContent>
 
+                                    <CardFooter className="flex-col gap-4 pt-2">
+                                        <Button 
+                                            type="submit" 
+                                            className="w-full h-11 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                            disabled={isLoading}
+                                        >
+                                            {isLoading ? (
+                                                <span className="flex items-center gap-2">
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    Logging in...
+                                                </span>
+                                            ) : (
+                                                'Login'
+                                            )}
+                                        </Button>
 
-                                        </CardContent>
-                                        <CardFooter className="flex-col gap-2">
-                                            <Button type="submit" className="w-full bg-indigo-500 text-white hover:bg-indigo-700 hover:cursor-pointer" disabled={isLoading}>
-                                                {isLoading ? 'Loging...' : 'Login'}
-                                            </Button>
-                                        </CardFooter>
-
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex-1 border-t border-gray-300" />
-                                            <span className="text-sm text-gray-400 whitespace-nowrap">
+                                        {/* Divider */}
+                                        <div className="flex items-center gap-4 w-full">
+                                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+                                            <span className="text-xs text-slate-400 font-medium">
                                                 Or continue with
                                             </span>
-
-                                            <div className="flex-1 border-t border-gray-300" />
-
+                                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
                                         </div>
+
                                         <GoogleLoginButton disabled={isLoading} />
 
-                                        <p className="text-center text-sm my-7">Don't have an account? <a href="/register" className="text-blue-500">Sign up</a></p>
-                                    </Card>
-                                </form>
+                                        <p className="text-center text-sm text-slate-600 mt-2">
+                                            Don't have an account?{' '}
+                                            <a href="/register" className="font-semibold text-violet-600 hover:text-violet-700 hover:underline transition-colors">
+                                                Sign up
+                                            </a>
+                                        </p>
+                                    </CardFooter>
+                                </Card>
+                            </form>
+                        </Form>
 
-                            </Form>
-                        </div>
+                        {/* Footer text */}
+                        <p className="text-center text-xs text-slate-500 mt-8">
+                            By continuing, you agree to Mozin's{' '}
+                            <a href="#" className="underline hover:text-violet-600 transition-colors">Terms of Service</a>
+                            {' '}and{' '}
+                            <a href="#" className="underline hover:text-violet-600 transition-colors">Privacy Policy</a>
+                        </p>
                     </div>
                 </div>
-            </section >
-
-        </div >
+            </section>
+        </div>
     )
-
-
 }
 
 export default LoginPage
