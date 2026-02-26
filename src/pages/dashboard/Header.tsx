@@ -2,99 +2,130 @@ import { Link } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useWhiteboard } from "@/hooks/use-whiteboard"
 import { useNavigate } from "react-router-dom";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOut, UserPen } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { LogOut, UserPen, Plus, Search } from "lucide-react";
 import { useAuthStore, useUser } from "@/store/AuthStore";
+import { useState } from "react";
 
 const HeaderDashboard = () => {
-    const user = useUser(); // ✅ Optimized selector
+    const user = useUser();
     const logout = useAuthStore((state) => state.logout);
+    const navigate = useNavigate();
+    const { createWhiteboard } = useWhiteboard();
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const navigate = useNavigate()
-    const { createWhiteboard } = useWhiteboard()
     const handleCreateBoard = async () => {
         const board = await createWhiteboard()
         if (board) {
             navigate(`/whiteboard/${board.id}`)
         }
-        console.log('board: ', board)
     }
 
     return (
-        <header className="flex justify-between items-center border-2 border-t-0 border-x-0 border-b-gray-300 px-20 py-4" >
-            <Link to="/homepage">
-                <div className="flex gap-1 justify-items-center items-center">
-                    <Avatar >
-                        <AvatarImage src="\src\assets\logoMozin.svg" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <h1 style={{ fontSize: '20px', fontWeight: '600', fontFamily: 'cursive' }}>Mozin</h1>
-                </div>
-            </Link>
-            <div className="bg-gray-200 flex rounded-md font-sans " style={{ paddingTop: '5px', paddingBottom: '5px', paddingLeft: '16px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ paddingRight: '6px' }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-                <input placeholder="Search board..." className="w-120 " type="text" />
-            </div>
-            <div className="flex justify-around gap-4">
-                <button type="submit"
-                    onClick={handleCreateBoard}
-                    className="bg-blue-600 text-white text-sm font-bold px-2 rounded-xl hover:bg-blue-700 hover:cursor-pointer hover:shadow-md hover:shadow-cyan-500/50 transform active:scale-95 transition duration-150">New Board</button>
-                <DropdownMenu modal={false}>
-                    {/* 1. modal={false} ngăn Radix thêm 'pointer-events: none' và 'margin-right' vào body */}
-
-                    <DropdownMenuTrigger asChild>
-                        <Avatar className="cursor-pointer">
-                            {user?.avatar ? (
-                                <AvatarImage src={user.avatar} />
-                            ) : (
-                                <>
-                                    <AvatarImage src="https://github.com/shadcn.png" />
-                                    <AvatarFallback>CN</AvatarFallback>
-                                </>
-                            )}
+        <header className="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80">
+            <div className="flex h-16 items-center justify-between px-6">
+                {/* Logo */}
+                <Link to="/homepage" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <div className="relative">
+                        <Avatar className="h-9 w-9 ring-2 ring-violet-500/20">
+                            <AvatarImage src="\src\assets\logoMozin.svg" />
+                            <AvatarFallback className="bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 text-white font-bold">
+                                M
+                            </AvatarFallback>
                         </Avatar>
-                    </DropdownMenuTrigger>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-violet-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+                        Mozin
+                    </h1>
+                </Link>
 
-                    <DropdownMenuContent
-                        className="w-30 bg-gray-300 border-0 "
-                        side="bottom"
-                        align="end"
-                        sideOffset={8}
-                        // 2. Ngăn việc tự động lấy lại focus vào trigger gây giật trang trên một số trình duyệt
-                        onCloseAutoFocus={(e) => {
-                            e.preventDefault();
-                        }}
+                {/* Search Bar */}
+                <div className="flex-1 max-w-xl mx-8">
+                    <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-violet-600 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search boards..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-300 focus:bg-white transition-all placeholder:text-slate-400"
+                        />
+                    </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleCreateBoard}
+                        className="group relative flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 hover:scale-105 overflow-hidden"
                     >
+                        <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <Plus className="h-4 w-4 relative z-10 group-hover:rotate-90 transition-transform duration-300" />
+                        <span className="relative z-10">New Board</span>
+                    </button>
 
+                    <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                            <button className="relative group">
+                                <Avatar className="h-10 w-10 cursor-pointer ring-2 ring-slate-200 group-hover:ring-violet-500 transition-all">
+                                    {user?.avatar ? (
+                                        <AvatarImage src={user.avatar} />
+                                    ) : (
+                                        <>
+                                            <AvatarImage src="https://github.com/shadcn.png" />
+                                            <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white font-semibold">
+                                                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                                            </AvatarFallback>
+                                        </>
+                                    )}
+                                </Avatar>
+                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                            </button>
+                        </DropdownMenuTrigger>
 
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-200">
-                                <UserPen />My profile
-                            </DropdownMenuItem>
+                        <DropdownMenuContent
+                            className="w-64 bg-white border border-slate-200 shadow-xl rounded-xl"
+                            side="bottom"
+                            align="end"
+                            sideOffset={8}
+                            onCloseAutoFocus={(e) => e.preventDefault()}
+                        >
+                            <div className="px-3 py-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-t-xl">
+                                <p className="text-sm font-semibold text-slate-900">{user?.username || 'User'}</p>
+                                <p className="text-xs text-slate-500 mt-0.5">{user?.email || 'user@example.com'}</p>
+                            </div>
 
-                            <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600 cursor-pointer hover:bg-gray-200"
-                                onSelect={async () => {
-                                    try {
-                                        await logout();
-                                    } finally {
-                                        // Dù API logout có lỗi hay không, ta vẫn đá user về login
-                                        window.location.href = '/login';
-                                    }
-                                }}
-                            >
-                                <LogOut /> Log out
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            <DropdownMenuGroup className="py-1.5">
+                                <DropdownMenuItem className="cursor-pointer hover:bg-slate-50 focus:bg-slate-50 flex items-center gap-2 px-3 py-2 mx-1 rounded-lg">
+                                    <UserPen className="h-4 w-4 text-slate-600" />
+                                    <span className="text-sm text-slate-700">My Profile</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
 
+                            <DropdownMenuSeparator className="bg-slate-100" />
+
+                            <DropdownMenuGroup className="py-1.5">
+                                <DropdownMenuItem
+                                    className="cursor-pointer hover:bg-red-50 focus:bg-red-50 flex items-center gap-2 px-3 py-2 mx-1 rounded-lg text-red-600 focus:text-red-600"
+                                    onSelect={async () => {
+                                        try {
+                                            await logout();
+                                        } finally {
+                                            window.location.href = '/login';
+                                        }
+                                    }}
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    <span className="text-sm font-medium">Log Out</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
         </header>
     )
-
 }
 
 export default HeaderDashboard
