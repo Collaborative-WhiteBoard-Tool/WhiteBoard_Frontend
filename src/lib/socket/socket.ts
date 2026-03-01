@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 class SocketManager {
     private socket: Socket | null = null;
     private reconnectAttempts = 0;
@@ -13,7 +14,7 @@ class SocketManager {
             return this.socket.connect();
         }
 
-        this.socket = io('http://localhost:3000', {
+        this.socket = io(SOCKET_URL, {
             withCredentials: true,
             transports: ['websocket', 'polling'],
             reconnection: true,

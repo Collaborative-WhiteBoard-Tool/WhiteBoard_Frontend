@@ -4,6 +4,8 @@ import { devtools } from 'zustand/middleware';
 import { authApi } from '@/lib/api/auth.api';
 import { User, LoginCredentials, RegisterCredentials } from '@/types/auth.type';
 import { toast } from 'sonner';
+import { clearTokens } from '@/lib/api/client';
+
 
 interface AuthState {
     user: User | null;
@@ -77,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
                 } catch (error) {
                     console.error('Server logout failed, clearing local state anyway', error);
                 } finally {
-                    // Luôn xóa state ở client dù API logout có lỗi hay không
+                    clearTokens();
                     set({
                         user: null,
                         isAuthenticated: false,
