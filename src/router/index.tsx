@@ -71,14 +71,7 @@ const AppRouter = () => {
           </PublicRoute>
         }
       />
-      <Route
-        path="/auth/google/success"
-        element={
-          <PublicRoute>
-            <GoogleSuccessPage />
-          </PublicRoute>
-        }
-      />
+      <Route path="/auth/google/success" element={<GoogleSuccessPage />} />
 
       <Route path="/*" element={<NotFound />} />
     </Routes>
