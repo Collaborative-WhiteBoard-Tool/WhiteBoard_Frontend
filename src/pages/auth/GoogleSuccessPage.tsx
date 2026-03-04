@@ -30,7 +30,7 @@ export const GoogleSuccessPage = () => {
 
       try {
         await refreshUser();
-        navigate("/dashboard");
+        navigate("/dashboard/listboard");
       } catch (err) {
         console.error("Failed to refresh user:", err);
         toast.error("Authentication failed");
