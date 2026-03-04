@@ -8,10 +8,10 @@ import { Toaster } from "./components/ui/sonner";
   src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1"
   type="module"
 ></script>;
-if (import.meta.env?.PROD || process.env.NODE_ENV === "production") {
-  console.log = () => {};
-  console.warn = () => {};
-}
+// if (import.meta.env?.PROD || process.env.NODE_ENV === "production") {
+//   console.log = () => {};
+//   console.warn = () => {};
+// }
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <App />
