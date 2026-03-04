@@ -13,6 +13,9 @@ export const GoogleSuccessPage = () => {
   const refreshToken = searchParams.get("refreshToken");
 
   useEffect(() => {
+    console.log("🔍 GoogleSuccessPage mounted");
+    console.log("accessToken from URL:", accessToken);
+    console.log("refreshToken from URL:", refreshToken);
     const handleCallback = async () => {
       if (error) {
         toast.error(`Login failed: ${error}`);
