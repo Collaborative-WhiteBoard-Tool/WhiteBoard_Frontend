@@ -109,7 +109,7 @@ const BoardCard = ({
         <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10"></div>
 
         <CardContent className="p-0 relative">
-          <div className="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+          <div className="relative aspect-[6/3] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
             {!board.thumbnailUrl ? (
               <img
                 src="https://res.cloudinary.com/dltbqnpfg/image/upload/v1771001011/backgorund_grid_eax4q6.jpg"

@@ -44,7 +44,7 @@ const ListBoard = () => {
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/30">
+    <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-purple-50/30 to-fuchsia-50/30">
       {/* Fixed Header Section */}
       <div className="bg-gradient-to-br from-blue-100 via-purple-50 to-fuchsia-50 px-8 py-6">
         <div className="flex items-center justify-between mb-5">
@@ -168,7 +168,7 @@ const ListBoard = () => {
       </div>
 
       {/* Scrollable Boards Grid */}
-      <section className="px-8 py-8 mb-10 bg-gradient-to-br from-gray-200 via-gray-400 to-blue-300">
+      <section className="flex-1 px-8 py-8 bg-gradient-to-br to-fuchsia-100 via-gray-50  ">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {whiteboards.map((board) => (
             <BoardCard
