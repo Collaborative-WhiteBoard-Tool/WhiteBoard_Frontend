@@ -13,6 +13,7 @@ import {
 import { LogOut, UserPen, Plus, Search } from "lucide-react";
 import { useAuthStore, useUser } from "@/store/AuthStore";
 import { useState } from "react";
+import logoMozin from "@/assets/logoMozin.png";
 
 const HeaderDashboard = () => {
   const user = useUser();
@@ -34,7 +35,7 @@ const HeaderDashboard = () => {
         {/* Logo */}
         <Link to="/homepage" className="flex items-center gap-2 group">
           <Avatar className="h-10 w-10 ring-2 ring-violet-500/20 group-hover:ring-violet-500/40 transition-all">
-            <AvatarImage src="\src\assets\logoMozin.png" />
+            <AvatarImage src={logoMozin} />
           </Avatar>
           <h1
             style={{

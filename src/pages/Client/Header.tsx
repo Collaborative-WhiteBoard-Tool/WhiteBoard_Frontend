@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import logoMozin from "@/assets/logoMozin.png";
 
 const Header = () => {
   return (
@@ -14,7 +15,7 @@ const Header = () => {
         <div className="flex gap-1 justify-items-center items-center ">
           <Link to="/homepage" className="flex items-center gap-2 group">
             <Avatar className="h-10 w-10 ring-2 ring-violet-500/20 group-hover:ring-violet-500/40 transition-all">
-              <AvatarImage src="\src\assets\logoMozin.png" />
+              <AvatarImage src={logoMozin} />
             </Avatar>
             <h1
               style={{

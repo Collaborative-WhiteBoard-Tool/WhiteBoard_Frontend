@@ -1,9 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../components/ui/avatar";
+import { Avatar, AvatarImage } from "../../components/ui/avatar";
 import { useForm } from "react-hook-form";
 import { LoginFormValues, loginSchema } from "@/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +28,7 @@ import { toast } from "sonner";
 import { ROUTES } from "@/lib/contants/routes";
 import { useAuthStore } from "@/store/AuthStore";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import logoMozin from "@/assets/logoMozin.png";
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +89,7 @@ const LoginPage = () => {
         <header className="flex justify-between items-center border-b border-white/40 backdrop-blur-md bg-white/60 py-4 px-20">
           <Link to="/homepage" className="flex items-center gap-2 group">
             <Avatar className="h-10 w-10 ring-2 ring-violet-500/20 group-hover:ring-violet-500/40 transition-all">
-              <AvatarImage src="\src\assets\logoMozin.png" />
+              <AvatarImage src={logoMozin} />
             </Avatar>
             <h1
               style={{
