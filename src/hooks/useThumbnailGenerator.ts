@@ -2,9 +2,9 @@ import { useCallback } from 'react';
 import { useCanvasStore } from '@/store/CanvasStore';
 import { uploadToCloudinary, canvasToBlob } from '@/lib/cloudinary';
 import { toast } from 'sonner';
+import apiClient from '@/lib/api/client';
 
 export const useThumbnailGenerator = (whiteboardId: string) => {
-    const apiUrl = import.meta.env.VITE_API_URL;
     const strokes = useCanvasStore(state => state.strokes);
 
     /**
@@ -101,21 +101,13 @@ export const useThumbnailGenerator = (whiteboardId: string) => {
                 return false;
             }
 
-            // Send to backend
-            const response = await fetch(`${apiUrl}/boards/${whiteboardId}/thumbnail`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    thumbnailUrl: thumbnail.url,
-                    thumbnailPublicId: thumbnail.publicId,
-                }),
-                keepalive: true,
+            // Dùng apiClient thay vì fetch để có Authorization header
+            const response = await apiClient.patch(`/boards/${whiteboardId}/thumbnail`, {
+                thumbnailUrl: thumbnail.url,
+                thumbnailPublicId: thumbnail.publicId,
             });
 
-            if (!response.ok) {
+            if (response.status !== 200) {
                 throw new Error('Failed to save thumbnail');
             }
 
