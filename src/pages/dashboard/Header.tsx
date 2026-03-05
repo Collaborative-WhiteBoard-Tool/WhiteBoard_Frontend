@@ -13,7 +13,7 @@ import {
 import { LogOut, UserPen, Plus, Search } from "lucide-react";
 import { useAuthStore, useUser } from "@/store/AuthStore";
 import { useState } from "react";
-import logoMozin from "@/assets/logoMozin.png";
+const logoMozin = "/assets/logoMozin.png";
 
 const HeaderDashboard = () => {
   const user = useUser();

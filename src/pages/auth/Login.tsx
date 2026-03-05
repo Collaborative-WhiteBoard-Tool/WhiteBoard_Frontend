@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { ROUTES } from "@/lib/contants/routes";
 import { useAuthStore } from "@/store/AuthStore";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
-import logoMozin from "@/assets/logoMozin.png";
+const logoMozin = "/assets/logoMozin.png";
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);

@@ -14,13 +14,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { CircleUser, LockKeyhole, Mail, RotateCcwKey } from "lucide-react";
-import work_poster from "../../assets/Work_Poster.png";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ROUTES } from "@/lib/contants/routes";
 import { useAuthStore } from "@/store/AuthStore";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
-import logoMozin from "@/assets/logoMozin.png";
+const work_poster = "/public/assets/Work_Poster.png";
+const logoMozin = "/assets/logoMozin.png";
 
 const RegisterPage = () => {
   const navigate = useNavigate();

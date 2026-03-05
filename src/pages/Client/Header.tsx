@@ -6,7 +6,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import logoMozin from "@/assets/logoMozin.png";
+const logoMozin = "/assets/logoMozin.png";
 
 const Header = () => {
   return (
