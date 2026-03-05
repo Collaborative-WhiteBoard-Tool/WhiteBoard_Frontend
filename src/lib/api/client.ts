@@ -48,17 +48,20 @@ apiClient.interceptors.response.use(
                 const refreshToken = getRefreshToken();
                 if (!refreshToken) throw new Error('No refresh token');
 
-                const res = await axios.post(
+                const res = await axios.post<{ result: { accessToken: string; refreshToken: string } }>(
                     `${API_URL}/auth/refresh-token`,
                     { refreshToken },
                     { withCredentials: true }
                 );
-                const data = res.data as { result: { accessToken: string; refreshToken: string } };
-                const { accessToken, refreshToken: newRefresh } = data.result;
+                const { accessToken, refreshToken: newRefresh } = res.data.result;
                 setTokens(accessToken, newRefresh);
-                if (originalRequest.headers) {
-                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-                }
+
+                // Quan trọng: set lại header đúng cách
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+                originalRequest.headers = {
+                    ...originalRequest.headers,
+                    Authorization: `Bearer ${accessToken}`
+                };
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 clearTokens();
