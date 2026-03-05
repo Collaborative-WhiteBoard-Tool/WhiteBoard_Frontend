@@ -8,12 +8,12 @@ export const authApi = {
     },
 
     login: async (data: LoginCredentials): Promise<AuthResponse> => {
-        const response = await apiClient.post<AuthResponse>('/auth/login', data)
-        return response.data
+        const response = await apiClient.post<AuthResponse>('/auth/login', data);
+        return response.data;
     },
 
     logout: async () => {
-        return await apiClient.post('/auth/logout')
+        return await apiClient.post('/auth/logout');
     },
 
     getMe: async (): Promise<User> => {
@@ -24,9 +24,6 @@ export const authApi = {
         return response.data.result;
     },
 
-    /**
-     * Refresh tokens
-     */
     refreshToken: async (): Promise<{ userId: string }> => {
         const response = await apiClient.post<{
             success: boolean;

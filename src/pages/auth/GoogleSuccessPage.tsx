@@ -9,11 +9,8 @@ export const GoogleSuccessPage = () => {
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const [searchParams] = useSearchParams();
   const error = searchParams.get("error");
-  const accessToken = searchParams.get("accessToken");
-  const refreshToken = searchParams.get("refreshToken");
 
   useEffect(() => {
-    console.log("🔍 GoogleSuccessPage mounted");
     const handleCallback = async () => {
       if (error) {
         toast.error(`Login failed: ${error}`);
@@ -21,11 +18,7 @@ export const GoogleSuccessPage = () => {
         return;
       }
 
-      if (accessToken && refreshToken) {
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-      }
-
+      // Token đã được set vào cookie bởi backend, chỉ cần gọi refreshUser
       try {
         await refreshUser();
         navigate("/dashboard/listboard");
@@ -37,7 +30,7 @@ export const GoogleSuccessPage = () => {
     };
 
     handleCallback();
-  }, []); // ← dependency array rỗng, chỉ chạy 1 lần duy nhất
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">

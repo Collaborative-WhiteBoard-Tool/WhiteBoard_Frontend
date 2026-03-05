@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 class SocketManager {
     private socket: Socket | null = null;
     private reconnectAttempts = 0;
@@ -8,14 +9,12 @@ class SocketManager {
 
     initialize(): Socket {
         if (this.socket) {
-            if (this.socket?.connected) {
-                return this.socket;
-            }
+            if (this.socket?.connected) return this.socket;
             return this.socket.connect();
         }
 
         this.socket = io(SOCKET_URL, {
-            withCredentials: true,
+            withCredentials: true, // gửi cookie tự động
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionDelay: 1000,
@@ -37,9 +36,7 @@ class SocketManager {
 
         this.socket.on('disconnect', (reason) => {
             console.log('❌ Socket disconnected:', reason);
-
             if (reason === 'io server disconnect') {
-                // Server kicked us, need to manually reconnect
                 this.socket?.connect();
             }
         });
@@ -47,7 +44,6 @@ class SocketManager {
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
             this.reconnectAttempts++;
-
             if (this.reconnectAttempts >= this.maxReconnectAttempts) {
                 console.error('Max reconnection attempts reached');
             }
@@ -70,9 +66,7 @@ class SocketManager {
         });
     }
 
-    getSocket(): Socket | null {
-        return this.socket;
-    }
+    getSocket(): Socket | null { return this.socket; }
 
     disconnect(): void {
         if (this.socket) {
@@ -82,14 +76,10 @@ class SocketManager {
         }
     }
 
-    isConnected(): boolean {
-        return this.socket?.connected || false;
-    }
+    isConnected(): boolean { return this.socket?.connected || false; }
 }
 
 export const socketManager = new SocketManager();
-
-// Convenience exports
 export const initializeSocket = () => socketManager.initialize();
 export const getSocket = () => socketManager.getSocket();
 export const disconnectSocket = () => socketManager.disconnect();
