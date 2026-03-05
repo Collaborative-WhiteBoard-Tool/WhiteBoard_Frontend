@@ -14,8 +14,6 @@ export const GoogleSuccessPage = () => {
 
   useEffect(() => {
     console.log("🔍 GoogleSuccessPage mounted");
-    console.log("accessToken from URL:", accessToken);
-    console.log("refreshToken from URL:", refreshToken);
     const handleCallback = async () => {
       if (error) {
         toast.error(`Login failed: ${error}`);
