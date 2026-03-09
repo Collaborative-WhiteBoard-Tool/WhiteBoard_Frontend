@@ -23,6 +23,7 @@ import { WhiteBoardItem } from "@/types/board.type";
 import { ShareDialog } from "@/components/whiteboard/ShareDialog";
 import { RenameDialog } from "@/components/whiteboard/RenameDialog";
 import { DeleteConfirmDialog } from "@/components/whiteboard/DeleteConfirmDialog";
+const thumbnailDeffault = "/assets/backgorund_grid.jpg";
 
 interface BoardCardProps {
   board: WhiteBoardItem;
@@ -112,7 +113,7 @@ const BoardCard = ({
           <div className="relative aspect-[6/3] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
             {!board.thumbnailUrl ? (
               <img
-                src="https://res.cloudinary.com/dltbqnpfg/image/upload/v1771001011/backgorund_grid_eax4q6.jpg"
+                src={thumbnailDeffault}
                 className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 alt={board.title}
               />

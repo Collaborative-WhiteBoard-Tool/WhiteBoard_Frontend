@@ -17,6 +17,7 @@ const TrashPage = () => {
 
   const [page, setPage] = useState(1);
   const limit = 8;
+  const thumbnailDeffault = "/assets/backgorund_grid.jpg";
 
   useEffect(() => {
     fetchDeletedBoards(page, limit);
@@ -92,10 +93,7 @@ const TrashPage = () => {
                 <CardContent className="p-0 relative">
                   <div className="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 opacity-60">
                     <img
-                      src={
-                        board.thumbnailUrl ||
-                        "https://res.cloudinary.com/dltbqnpfg/image/upload/v1771001011/backgorund_grid_eax4q6.jpg"
-                      }
+                      src={board.thumbnailUrl || thumbnailDeffault}
                       className="h-full w-full object-cover"
                       alt={board.title}
                     />

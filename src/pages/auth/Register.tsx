@@ -19,7 +19,7 @@ import { useState } from "react";
 import { ROUTES } from "@/lib/contants/routes";
 import { useAuthStore } from "@/store/AuthStore";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
-const work_poster = "/public/assets/Work_Poster.png";
+const work_poster = "/assets/Work_Poster.png";
 const logoMozin = "/assets/logoMozin.png";
 
 const RegisterPage = () => {
